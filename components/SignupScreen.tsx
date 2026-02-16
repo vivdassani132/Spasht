@@ -33,13 +33,15 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ onSuccess, onAdminTrigger }
     <div className="flex flex-col min-h-screen px-6 py-10 relative overflow-hidden">
       {/* 
         SECRET ADMIN TRIGGER 
-        Absolute top-left, tiny (1px), completely invisible.
+        Absolute top-left, enlarged to 80x80px for better accessibility, 
+        but kept completely invisible (opacity-0).
       */}
       <button 
         onClick={onAdminTrigger}
-        className="fixed top-0 left-0 w-1 h-1 z-[999] opacity-0 cursor-default focus:outline-none"
+        className="fixed top-0 left-0 w-20 h-20 z-[999] opacity-0 cursor-default focus:outline-none"
         aria-hidden="true"
         type="button"
+        title="Vault Access"
       />
 
       <div className="flex-grow flex flex-col items-center justify-center relative z-10">
