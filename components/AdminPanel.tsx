@@ -15,7 +15,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const [verifying, setVerifying] = useState(false);
 
   // SHA-256 hash of "admin123"
-  // This ensures the actual password is never stored as plain text in the source code.
   const ACCESS_KEY_HASH = '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9';
 
   const verifyAccess = async (input: string) => {
@@ -33,19 +32,28 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     if (isValid) {
       setAuthorized(true);
     } else {
-      alert('Vault Access Denied: Incorrect Key');
+      alert('Access Denied');
       setPassword('');
     }
     setVerifying(false);
   };
 
+  // Sync Data
+  const loadData = async (silent = false) => {
+    if (!silent) setLoading(true);
+    const data = await fetchWaitlist();
+    setList(data);
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (authorized) {
-      setLoading(true);
-      fetchWaitlist().then(data => {
-        setList(data);
-        setLoading(false);
-      });
+      loadData();
+      // LIVE SYNC POLLING: Check for new entries every 10 seconds
+      const interval = setInterval(() => {
+        loadData(true);
+      }, 10000);
+      return () => clearInterval(interval);
     }
   }, [authorized]);
 
@@ -58,7 +66,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </div>
             <h2 className="text-3xl font-serif-italic text-zinc-900">Vault Access</h2>
-            <p className="text-[9px] text-zinc-400 uppercase tracking-[0.4em] mt-3 font-bold">Cloud Directory Terminal</p>
+            <p className="text-[9px] text-zinc-400 uppercase tracking-[0.4em] mt-3 font-bold">Encrypted Directory Terminal</p>
           </div>
           <input
             autoFocus
@@ -71,11 +79,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
           <button 
             type="submit" 
             disabled={verifying} 
-            className="w-full bg-zinc-900 text-white rounded-2xl py-5 font-bold text-[10px] uppercase tracking-widest shadow-2xl active:scale-95 transition-all disabled:opacity-50"
+            className="w-full bg-zinc-900 text-white rounded-2xl py-5 font-bold text-[10px] uppercase tracking-widest shadow-2xl active:scale-95 transition-all"
           >
             {verifying ? 'Verifying...' : 'Unlock Directory'}
           </button>
-          <button onClick={onBack} type="button" className="w-full text-zinc-300 py-4 text-[9px] font-bold uppercase tracking-[0.2em] hover:text-zinc-500 transition-colors">Return to Landing</button>
+          <button onClick={onBack} type="button" className="w-full text-zinc-300 py-4 text-[9px] font-bold uppercase tracking-[0.2em] hover:text-zinc-500">Cancel</button>
         </form>
       </div>
     );
@@ -85,14 +93,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     <div className="min-h-screen bg-white p-8 md:p-16 max-w-6xl mx-auto animate-in fade-in duration-700 relative z-50">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
         <div>
-          <div className="inline-block px-3 py-1 bg-zinc-100 text-zinc-500 rounded-full text-[8px] font-bold uppercase tracking-widest mb-4">Live Sync Active</div>
+          <div className="inline-block px-3 py-1 bg-zinc-100 text-zinc-500 rounded-full text-[8px] font-bold uppercase tracking-widest mb-4 flex items-center gap-2 w-fit">
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+            Global Sync Active
+          </div>
           <h1 className="text-6xl md:text-7xl font-serif-italic text-zinc-900">Directory</h1>
           <p className="text-zinc-400 font-bold text-[10px] uppercase tracking-[0.4em] mt-4">
-            {loading ? 'Polling Cloud Server...' : `${list.length} Verified Entries`}
+            {loading ? 'Refreshing...' : `${list.length} Verified Entries Across All Devices`}
           </p>
         </div>
         <div className="flex gap-4">
-          <button onClick={() => window.location.reload()} className="px-6 py-4 border border-zinc-100 rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-zinc-50 transition-all">Refresh</button>
+          <button onClick={() => loadData()} className="px-6 py-4 border border-zinc-100 rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-zinc-50 transition-all">Refresh Now</button>
           <button onClick={onBack} className="px-10 py-4 bg-zinc-900 text-white rounded-xl text-[9px] font-bold uppercase tracking-widest shadow-xl hover:shadow-2xl transition-all">Exit Vault</button>
         </div>
       </div>
@@ -103,7 +114,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
             <thead>
               <tr className="border-b border-zinc-50 bg-zinc-50/50 text-zinc-400 text-[10px] uppercase tracking-[0.3em] font-bold">
                 <th className="px-12 py-8">User Identity</th>
-                <th className="px-12 py-8 text-right">Registered At</th>
+                <th className="px-12 py-8 text-right">Registration Node</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-50">
@@ -112,7 +123,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                   <td className="px-12 py-8">
                     <div className="flex flex-col">
                       <span className="text-zinc-900 font-medium text-base">{entry.email}</span>
-                      <span className="text-[9px] text-zinc-300 uppercase tracking-widest mt-1">Verified Member</span>
+                      <span className="text-[9px] text-zinc-300 uppercase tracking-widest mt-1">Global Waitlist Verified</span>
                     </div>
                   </td>
                   <td className="px-12 py-8 text-right">
@@ -128,7 +139,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                   <td colSpan={2} className="px-12 py-40 text-center">
                     <div className="max-w-xs mx-auto opacity-20">
                       <svg className="mx-auto mb-6" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                      <p className="font-serif-italic text-2xl">The directory is currently empty.</p>
+                      <p className="font-serif-italic text-2xl">The cloud directory is empty.</p>
                     </div>
                   </td>
                 </tr>

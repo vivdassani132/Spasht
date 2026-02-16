@@ -14,25 +14,31 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ onSuccess, onAdminTrigger }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !email.includes('@')) return;
+    
     setLoading(true);
     const success = await addToWaitlist(email);
+    
     if (success) {
       setLoading(false);
       onSuccess(email);
     } else {
       setLoading(false);
-      alert("Connectivity issue. Please try again.");
+      alert("Network Sync Issue: Please check your connection and try again.");
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen px-6 py-10 relative overflow-hidden">
-      {/* Secret Admin Trigger - Top Left Corner */}
-      <div 
+      {/* 
+        SECRET ADMIN TRIGGER 
+        Absolute top-left, tiny (4px), completely invisible.
+      */}
+      <button 
         onClick={onAdminTrigger}
-        className="fixed top-0 left-0 w-4 h-4 z-[200] opacity-0 cursor-default"
-        title="Vault Access"
+        className="fixed top-0 left-0 w-4 h-4 z-[999] opacity-0 cursor-default focus:outline-none"
+        aria-hidden="true"
+        type="button"
       />
 
       <div className="flex-grow flex flex-col items-center justify-center relative z-10">
@@ -62,7 +68,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ onSuccess, onAdminTrigger }
           <div className="w-full max-w-sm bg-white border border-zinc-100 rounded-[3rem] p-12 shadow-2xl">
             <div className="flex justify-between items-center mb-10">
               <h3 className="text-3xl font-serif-italic text-zinc-900">Waitlist</h3>
-              <button onClick={() => setShowForm(false)} className="p-2 opacity-20 hover:opacity-100">
+              <button onClick={() => setShowForm(false)} className="p-2 opacity-20 hover:opacity-100 transition-opacity">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
             </div>
@@ -74,14 +80,14 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ onSuccess, onAdminTrigger }
                 onChange={(e) => setEmail(e.target.value)} 
                 placeholder="Your email address" 
                 required 
-                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-5 px-8 focus:outline-none focus:ring-2 focus:ring-zinc-900/5 transition-all text-zinc-900 placeholder:text-zinc-400" 
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-5 px-8 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 transition-all text-zinc-900 placeholder:text-zinc-300" 
               />
               <button 
                 disabled={loading} 
                 type="submit" 
-                className="w-full bg-zinc-900 text-white font-bold rounded-2xl py-5 hover:bg-black transition-all text-xs uppercase tracking-widest shadow-lg shadow-zinc-900/20"
+                className="w-full bg-zinc-900 text-white font-bold rounded-2xl py-5 hover:bg-black transition-all text-xs uppercase tracking-widest shadow-xl shadow-zinc-900/10 disabled:opacity-50"
               >
-                {loading ? 'Securing...' : 'Secure My Spot'}
+                {loading ? 'Submitting...' : 'Secure My Spot'}
               </button>
             </form>
           </div>
