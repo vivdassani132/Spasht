@@ -1,9 +1,8 @@
 
 export interface WaitlistEntry {
-  id: string;
+  date: string;
+  time: string;
   email: string;
-  timestamp: number;
-  referralCount: number;
 }
 
 export enum AppState {
