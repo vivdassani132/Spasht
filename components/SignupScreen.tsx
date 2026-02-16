@@ -11,18 +11,6 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ onSuccess, onAdminTrigger }
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [clickCount, setClickCount] = useState(0);
-
-  const handleTitleClick = () => {
-    const newCount = clickCount + 1;
-    if (newCount >= 3) {
-      onAdminTrigger();
-      setClickCount(0);
-    } else {
-      setClickCount(newCount);
-      setTimeout(() => setClickCount(0), 1000);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,15 +22,22 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ onSuccess, onAdminTrigger }
       onSuccess(email);
     } else {
       setLoading(false);
-      alert("Something went wrong. Please try again.");
+      alert("Connectivity issue. Please try again.");
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen px-6 py-10 relative overflow-hidden">
+      {/* Secret Admin Trigger - Top Left Corner */}
+      <div 
+        onClick={onAdminTrigger}
+        className="fixed top-0 left-0 w-4 h-4 z-[200] opacity-0 cursor-default"
+        title="Vault Access"
+      />
+
       <div className="flex-grow flex flex-col items-center justify-center relative z-10">
         <div className="max-w-7xl w-full flex flex-col md:flex-row items-center md:items-start md:justify-center gap-x-16 px-4">
-          <div className="text-center md:text-left cursor-default select-none" onClick={handleTitleClick}>
+          <div className="text-center md:text-left select-none">
             <h1 className="text-[15vw] md:text-[12rem] lg:text-[14rem] font-serif-italic leading-[0.8] tracking-tight text-zinc-900 mb-12 md:mb-0">
               Coming <br />
               <span className="ml-0 md:ml-48">Soon</span>
@@ -53,7 +48,10 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ onSuccess, onAdminTrigger }
           </div>
         </div>
         <div className="mt-24">
-          <button onClick={() => setShowForm(true)} className="glow-button bg-zinc-900 text-white text-[10px] md:text-[11px] font-bold uppercase tracking-[0.3em] px-16 py-6 rounded-2xl transition-all active:scale-[0.98]">
+          <button 
+            onClick={() => setShowForm(true)} 
+            className="glow-button bg-zinc-900 text-white text-[10px] md:text-[11px] font-bold uppercase tracking-[0.3em] px-16 py-6 rounded-2xl transition-all active:scale-[0.98]"
+          >
             Start signing up now
           </button>
         </div>
@@ -69,9 +67,21 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ onSuccess, onAdminTrigger }
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <input autoFocus type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email address" required className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-5 px-8 focus:outline-none focus:ring-2 focus:ring-zinc-900/5 transition-all" />
-              <button disabled={loading} type="submit" className="w-full bg-zinc-900 text-white font-bold rounded-2xl py-5 hover:bg-black transition-all text-xs uppercase tracking-widest">
-                {loading ? 'Joining...' : 'Secure My Spot'}
+              <input 
+                autoFocus 
+                type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                placeholder="Your email address" 
+                required 
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-5 px-8 focus:outline-none focus:ring-2 focus:ring-zinc-900/5 transition-all text-zinc-900 placeholder:text-zinc-400" 
+              />
+              <button 
+                disabled={loading} 
+                type="submit" 
+                className="w-full bg-zinc-900 text-white font-bold rounded-2xl py-5 hover:bg-black transition-all text-xs uppercase tracking-widest shadow-lg shadow-zinc-900/20"
+              >
+                {loading ? 'Securing...' : 'Secure My Spot'}
               </button>
             </form>
           </div>

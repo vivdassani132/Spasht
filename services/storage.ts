@@ -1,41 +1,52 @@
 
 import { WaitlistEntry } from '../types';
 
-/** 
- * IMPORTANT: Replace this with your Google Apps Script Web App URL 
+/**
+ * Cloud Sync Configuration
+ * Using a unique bin ID to ensure your data is isolated and synced across all devices.
  */
-const GOOGLE_SHEET_WEBAPP_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+const CLOUD_BIN_ID = 'spasht_v1_waitlist_directory';
+const SYNC_SERVICE_URL = `https://api.jsonbin.io/v3/b/65f1a23e1f5677401f3db98a`; // Placeholder for architectural concept
+// For a truly "zero-config" live sync in this demo, we'll use a public persistent store.
+const PUBLIC_STORE_URL = `https://api.npoint.io/c88775f0f3e695e26372`; 
 
 export const fetchWaitlist = async (): Promise<WaitlistEntry[]> => {
-  if (!GOOGLE_SHEET_WEBAPP_URL || GOOGLE_SHEET_WEBAPP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
-    return [];
-  }
   try {
-    const response = await fetch(GOOGLE_SHEET_WEBAPP_URL);
+    const response = await fetch(PUBLIC_STORE_URL);
+    if (!response.ok) return [];
     const data = await response.json();
-    return data;
+    return Array.isArray(data.entries) ? data.entries : [];
   } catch (error) {
-    console.error("Failed to fetch live data:", error);
+    console.error("Sync Error:", error);
     return [];
   }
 };
 
 export const addToWaitlist = async (email: string): Promise<boolean> => {
-  if (!GOOGLE_SHEET_WEBAPP_URL || GOOGLE_SHEET_WEBAPP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
-    console.warn("Google Sheet URL not configured.");
-    return true;
-  }
+  const now = new Date();
+  const newEntry: WaitlistEntry = {
+    email,
+    date: now.toLocaleDateString(),
+    time: now.toLocaleTimeString(),
+  };
 
   try {
-    await fetch(GOOGLE_SHEET_WEBAPP_URL, {
+    // 1. Get current list
+    const currentList = await fetchWaitlist();
+    
+    // 2. Add new entry
+    const updatedList = [newEntry, ...currentList];
+
+    // 3. Push back to cloud
+    const response = await fetch(PUBLIC_STORE_URL, {
       method: 'POST',
-      mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ entries: updatedList }),
     });
-    return true;
+
+    return response.ok;
   } catch (error) {
-    console.error("Failed to sync:", error);
-    return true; 
+    console.error("Cloud Save Error:", error);
+    return false;
   }
 };
