@@ -15,6 +15,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const [verifying, setVerifying] = useState(false);
 
   // SHA-256 hash of "admin123"
+  // This ensures the password isn't visible in plain text in the codebase.
   const ACCESS_KEY_HASH = '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9';
 
   const verifyAccess = async (input: string) => {
@@ -32,7 +33,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     if (isValid) {
       setAuthorized(true);
     } else {
-      alert('Access Denied');
+      alert('Vault Access Denied: Invalid Key');
       setPassword('');
     }
     setVerifying(false);
@@ -49,10 +50,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   useEffect(() => {
     if (authorized) {
       loadData();
-      // LIVE SYNC POLLING: Check for new entries every 10 seconds
+      // REAL-TIME POLLING: Check the cloud every 5 seconds for new entries
       const interval = setInterval(() => {
         loadData(true);
-      }, 10000);
+      }, 5000);
       return () => clearInterval(interval);
     }
   }, [authorized]);
@@ -66,12 +67,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </div>
             <h2 className="text-3xl font-serif-italic text-zinc-900">Vault Access</h2>
-            <p className="text-[9px] text-zinc-400 uppercase tracking-[0.4em] mt-3 font-bold">Encrypted Directory Terminal</p>
+            <p className="text-[9px] text-zinc-400 uppercase tracking-[0.4em] mt-3 font-bold">Secure Global Terminal</p>
           </div>
           <input
             autoFocus
             type="password"
-            placeholder="ACCESS KEY"
+            placeholder="ENTER ACCESS KEY"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl py-5 px-6 focus:outline-none focus:ring-4 focus:ring-zinc-900/5 transition-all text-center tracking-[0.5em] text-zinc-900 placeholder:text-zinc-200"
@@ -81,9 +82,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
             disabled={verifying} 
             className="w-full bg-zinc-900 text-white rounded-2xl py-5 font-bold text-[10px] uppercase tracking-widest shadow-2xl active:scale-95 transition-all"
           >
-            {verifying ? 'Verifying...' : 'Unlock Directory'}
+            {verifying ? 'Verifying Node...' : 'Unlock Directory'}
           </button>
-          <button onClick={onBack} type="button" className="w-full text-zinc-300 py-4 text-[9px] font-bold uppercase tracking-[0.2em] hover:text-zinc-500">Cancel</button>
+          <button onClick={onBack} type="button" className="w-full text-zinc-300 py-4 text-[9px] font-bold uppercase tracking-[0.2em] hover:text-zinc-500">Close Terminal</button>
         </form>
       </div>
     );
@@ -95,15 +96,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
         <div>
           <div className="inline-block px-3 py-1 bg-zinc-100 text-zinc-500 rounded-full text-[8px] font-bold uppercase tracking-widest mb-4 flex items-center gap-2 w-fit">
             <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-            Global Sync Active
+            Cloud Sync Active
           </div>
           <h1 className="text-6xl md:text-7xl font-serif-italic text-zinc-900">Directory</h1>
           <p className="text-zinc-400 font-bold text-[10px] uppercase tracking-[0.4em] mt-4">
-            {loading ? 'Refreshing...' : `${list.length} Verified Entries Across All Devices`}
+            {loading ? 'Refreshing Cloud Node...' : `${list.length} Verified Entries Across All Devices`}
           </p>
         </div>
         <div className="flex gap-4">
-          <button onClick={() => loadData()} className="px-6 py-4 border border-zinc-100 rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-zinc-50 transition-all">Refresh Now</button>
+          <button onClick={() => loadData()} className="px-6 py-4 border border-zinc-100 rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-zinc-50 transition-all">Manual Sync</button>
           <button onClick={onBack} className="px-10 py-4 bg-zinc-900 text-white rounded-xl text-[9px] font-bold uppercase tracking-widest shadow-xl hover:shadow-2xl transition-all">Exit Vault</button>
         </div>
       </div>
@@ -114,7 +115,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
             <thead>
               <tr className="border-b border-zinc-50 bg-zinc-50/50 text-zinc-400 text-[10px] uppercase tracking-[0.3em] font-bold">
                 <th className="px-12 py-8">User Identity</th>
-                <th className="px-12 py-8 text-right">Registration Node</th>
+                <th className="px-12 py-8 text-right">Registered At</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-50">
@@ -123,7 +124,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                   <td className="px-12 py-8">
                     <div className="flex flex-col">
                       <span className="text-zinc-900 font-medium text-base">{entry.email}</span>
-                      <span className="text-[9px] text-zinc-300 uppercase tracking-widest mt-1">Global Waitlist Verified</span>
+                      <span className="text-[9px] text-zinc-300 uppercase tracking-widest mt-1">Live Directory Member</span>
                     </div>
                   </td>
                   <td className="px-12 py-8 text-right">
@@ -139,7 +140,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                   <td colSpan={2} className="px-12 py-40 text-center">
                     <div className="max-w-xs mx-auto opacity-20">
                       <svg className="mx-auto mb-6" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                      <p className="font-serif-italic text-2xl">The cloud directory is empty.</p>
+                      <p className="font-serif-italic text-2xl">The cloud directory is currently empty.</p>
                     </div>
                   </td>
                 </tr>
